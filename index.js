@@ -6,9 +6,11 @@ const dotenv = require("dotenv");
 const multer = require("multer");
 const helmet = require("helmet");
 const morgan = require("morgan");
+
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
 const postRoutes = require("./routes/posts");
+const messageRoute = require("./routes/message");
 const { register } = require("./controllers/auth");
 const { createPost } = require("./controllers/posts");
 const verifyToken = require("./middleware/auth");
@@ -19,6 +21,12 @@ const { users, posts } = require("./data/index");
 /*Configurations*/
 dotenv.config();
 const app = express();
+const server = require("http").createServer(app);
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "https://mern-linkedin-clone-frontend.onrender.com",
+  },
+});
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -48,6 +56,7 @@ app.post("/posts", verifyToken, upload.single("picture"), createPost);
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
+app.use("/message", messageRoute);
 
 /*Mongoose Setup*/
 const PORT = process.env.PORT || 6001;
@@ -57,10 +66,18 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}...`);
     });
     // User.insertMany(users);
     // Post.insertMany(posts);
   })
   .catch((error) => console.log(`${error} did not connect`));
+
+
+io.on("connection", (socket) => {
+  console.log("client connected")
+  socket.on("send-msg", (message, receiverId)=>{
+    socket.broadcast.emit("received-msg",message, receiverId)
+  })
+});

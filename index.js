@@ -33,7 +33,9 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
+app.use(cors({
+  origin:"http://localhost:3000"
+}));
 app.use("/assets", express.static("public/assets"));
 
 /*File Storage*/
@@ -74,10 +76,9 @@ mongoose
   })
   .catch((error) => console.log(`${error} did not connect`));
 
-
 io.on("connection", (socket) => {
-  console.log("client connected")
-  socket.on("send-msg", (message, receiverId)=>{
-    socket.broadcast.emit("received-msg",message, receiverId)
-  })
+  console.log("client connected");
+  socket.on("send-msg", (message, receiverId) => {
+    socket.broadcast.emit("received-msg", message, receiverId);
+  });
 });

@@ -13,6 +13,10 @@ const msgSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    status:{
+      type:String,
+      default:"unseen"
+    }
   },
   { timestamps: true }
 );

@@ -14,9 +14,6 @@ const messageRoute = require("./routes/message");
 const { register } = require("./controllers/auth");
 const { createPost } = require("./controllers/posts");
 const verifyToken = require("./middleware/auth");
-const User = require("./models/Users");
-const Post = require("./models/Post");
-const { users, posts } = require("./data/index");
 
 /*Configurations*/
 dotenv.config();
@@ -24,7 +21,7 @@ const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: "*",
+    origin: "https://mern-linkedin-clone-frontend.onrender.com",
   },
 });
 app.use(express.json());
@@ -69,14 +66,16 @@ mongoose
     server.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}...`);
     });
-    // User.insertMany(users);
-    // Post.insertMany(posts);
   })
   .catch((error) => console.log(`${error} did not connect`));
 
 io.on("connection", (socket) => {
-  console.log("client connected");
-  socket.on("send-msg", (message, receiverId) => {
-    socket.broadcast.emit("received-msg", message, receiverId);
+  // console.log("client connected");
+  socket.on("send-msg", (message, receiverId, senderId) => {
+    io.emit("received-msg", message, receiverId, senderId);
+  });
+
+  socket.on("sender-complete-info", (senderInfo) => {
+    io.emit("share-sender-info", senderInfo);
   });
 });
